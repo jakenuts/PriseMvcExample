@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\StaticRazorLib\StaticRazorLib.csproj" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <PackageReference Include="Prise" Version="6.*" />
+    <PackageReference Include="Prise.Mvc" Version="6.*" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <Content Remove="Modules\**" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <Folder Include="Modules\" />
+  </ItemGroup>
+
+
+</Project>
