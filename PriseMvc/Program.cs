@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using Contracts;
 using Prise.Mvc;
-using PriseMvc.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +9,10 @@ builder.WebHost.UseStaticWebAssets();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-
 PluginShared.ModulePath = Path.GetFullPath(Path.Combine(builder.Environment.WebRootPath, "..\\Modules"));
 
 builder.Services.AddPriseMvc();
-builder.Services.AddPriseRazorPlugins(builder.Environment.WebRootPath, PluginShared.ModulePath );
-
+builder.Services.AddPriseRazorPlugins(builder.Environment.WebRootPath, PluginShared.ModulePath);
 
 var app = builder.Build();
 
@@ -25,6 +21,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
+
 app.UseStaticFiles();
 
 app.UseRouting();

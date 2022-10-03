@@ -1,70 +1,74 @@
-﻿using Contracts;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
+using Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Prise;
 using Prise.Mvc;
 using PriseMvc.Models;
 
 namespace PriseMvc.Controllers
 {
-     public class HomeController : Controller
+    public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> logger;
         private readonly ApplicationPartManager applicationPartManager;
+
+        private readonly ILogger<HomeController> logger;
+
         private readonly IMvcPluginLoader mvcPluginLoader;
+
         //private readonly IConfigurationService configurationService;
         private readonly IPriseMvcActionDescriptorChangeProvider pluginChangeProvider;
+
         public HomeController(
             ILogger<HomeController> logger,
             ApplicationPartManager applicationPartManager,
             IMvcPluginLoader mvcPluginLoader,
-           // IConfigurationService configurationService,
+
+            // IConfigurationService configurationService,
             IPriseMvcActionDescriptorChangeProvider pluginChangeProvider)
         {
             this.logger = logger;
             this.applicationPartManager = applicationPartManager;
             this.mvcPluginLoader = mvcPluginLoader;
-     //       this.configurationService = configurationService;
+
+            //       this.configurationService = configurationService;
             this.pluginChangeProvider = pluginChangeProvider;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            return View(await GetHomeViewModel());
-        }
+        public async Task<IActionResult> Index() => View(await GetHomeViewModel());
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Error() => View(new ErrorViewModel
+            { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
         [Route("home/enable/{pluginName}")]
         public async Task<IActionResult> Enable(string pluginName)
         {
-            if (String.IsNullOrEmpty(pluginName))
-                return NotFound();
-
-            var pluginAssemblies = await this.mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
-            var pluginToEnable = pluginAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.AssemblyName) == pluginName);
-            if (pluginToEnable == null)
-                return NotFound();
-
-            var pluginAssembly = await this.mvcPluginLoader.LoadPluginAssembly<IMvcPlugin>(pluginToEnable, configure: (context) =>
+            if (string.IsNullOrEmpty(pluginName))
             {
-              //  context.AddHostService<IConfigurationService>(this.configurationService);
+                return NotFound();
+            }
+
+            var pluginAssemblies = await mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
+
+            var pluginToEnable =
+                pluginAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.AssemblyName) == pluginName);
+
+            if (pluginToEnable == null)
+            {
+                return NotFound();
+            }
+
+            var pluginAssembly = await mvcPluginLoader.LoadPluginAssembly<IMvcPlugin>(pluginToEnable, configure: context =>
+            {
+                //  context.AddHostService<IConfigurationService>(this.configurationService);
             });
 
-            this.applicationPartManager.ApplicationParts.Add(new PluginAssemblyPart(pluginAssembly.Assembly));
-            
-            this.pluginChangeProvider.TriggerPluginChanged();
+            applicationPartManager.ApplicationParts.Add(new PluginAssemblyPart(pluginAssembly.Assembly));
+
+            pluginChangeProvider.TriggerPluginChanged();
 
             return Redirect("/");
         }
@@ -72,34 +76,48 @@ namespace PriseMvc.Controllers
         [Route("home/disable/{pluginName}")]
         public async Task<IActionResult> Disable(string pluginName)
         {
-            if (String.IsNullOrEmpty(pluginName))
+            if (string.IsNullOrEmpty(pluginName))
+            {
                 return NotFound();
+            }
 
-            var pluginAssemblies = await this.mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
-            var pluginToDisable = pluginAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.AssemblyName) == pluginName);
+            var pluginAssemblies = await mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
+
+            var pluginToDisable =
+                pluginAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.AssemblyName) == pluginName);
+
             if (pluginToDisable == null)
+            {
                 return NotFound();
+            }
 
             var pluginAssemblyToDisable = Path.GetFileNameWithoutExtension(pluginToDisable.AssemblyName);
-            var partToRemove = this.applicationPartManager.ApplicationParts.FirstOrDefault(a => a.Name == pluginAssemblyToDisable);
+            var partToRemove = applicationPartManager.ApplicationParts.FirstOrDefault(a => a.Name == pluginAssemblyToDisable);
 
-            this.applicationPartManager.ApplicationParts.Remove(partToRemove);
-            await this.mvcPluginLoader.UnloadPluginAssembly<IMvcPlugin>(pluginToDisable);
-            this.pluginChangeProvider.TriggerPluginChanged();
+            if (partToRemove == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            applicationPartManager.ApplicationParts.Remove(partToRemove);
+            await mvcPluginLoader.UnloadPluginAssembly<IMvcPlugin>(pluginToDisable);
+            pluginChangeProvider.TriggerPluginChanged();
 
             return Redirect("/");
         }
 
         private async Task<HomeViewModel> GetHomeViewModel()
         {
-            var applicationParts = this.applicationPartManager.ApplicationParts;
-            var pluginAssemblies = await this.mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
+            var applicationParts = applicationPartManager.ApplicationParts;
+            var pluginAssemblies = await mvcPluginLoader.FindPlugins<IMvcPlugin>(PluginShared.ModulePath);
 
             var loadedPlugins = from plugin in pluginAssemblies
                                 let pluginName = Path.GetFileNameWithoutExtension(plugin.AssemblyName)
                                 let pluginType = plugin.PluginType
-                                let pluginDescriptionAttribute = CustomAttributeData.GetCustomAttributes(pluginType).FirstOrDefault(c => c.AttributeType.Name == typeof(MvcPluginDescriptionAttribute).Name)
-                                let pluginDescription = pluginDescriptionAttribute.NamedArguments.FirstOrDefault(a => a.MemberName == "Description").TypedValue.Value as string
+                                let pluginDescriptionAttribute = CustomAttributeData.GetCustomAttributes(pluginType)
+                                    .FirstOrDefault(c => c.AttributeType.Name == typeof(MvcPluginDescriptionAttribute).Name)
+                                let pluginDescription = pluginDescriptionAttribute.NamedArguments
+                                    .FirstOrDefault(a => a.MemberName == "Description").TypedValue.Value as string
                                 join part in applicationParts
                                     on pluginName equals part.Name
                                     into pluginParts
@@ -111,9 +129,7 @@ namespace PriseMvc.Controllers
                                     IsEnabled = pluginPart != null
                                 };
 
-            return new HomeViewModel() { Plugins = loadedPlugins };
+            return new HomeViewModel { Plugins = loadedPlugins };
         }
-
-       
     }
 }

@@ -5,8 +5,8 @@
 
 <div class="text-center">
     <h1 class="display-4">ASP.NET 6.0 MVC Plugins using Prise2!</h1>
-    <img src="https://github.com/merken/Prise/blob/master/docs/prise.png?raw=true" height="50px" />
-    <div class="display-4" style="font-size:21pt">These are the features (IMvcPlugin) plugins discovered using Prise Assembly Scanning</div>
+    <img src="https://github.com/merken/Prise/blob/master/docs/prise.png?raw=true" height="50px"/>
+    <div class="display-4" style="font-size: 21pt">These are the features (IMvcPlugin) plugins discovered using Prise Assembly Scanning</div>
     <table class="table">
         <thead>
         <tr>
@@ -26,7 +26,7 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
-                <td style="text-align:left">
+                <td style="text-align: left">
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
@@ -43,36 +43,54 @@
         }
         </tbody>
     </table>
-    
+
     <div class="text-start">
-        
+
         <h3>Static Library</h3>
         <ul>
-            <li><a asp-area="MyFeature" asp-controller="Static" asp-action="Static">Static MVC View</a></li>
-            <li><a href="MyFeature/StaticPage">Static Razor Page</a></li>
+            <li>
+                <a asp-area="MyFeature" asp-controller="Static" asp-action="Static">Static MVC View</a>
+            </li>
+            <li>
+                <a href="MyFeature/StaticPage">Static Razor Page</a>
+            </li>
         </ul>
 
 
         <h3>Dynamic Library</h3>
         <ul>
-            <li><b>In Area</b>
-            
-                <ul>
-                    <li><a href="/DynamicContentResult">Dynamic Controller Content (works)</a></li>
-                    <li><a href="/Dynamic">Dynamic MVC View</a></li>
-                    <li><a href="MyFeature/DynamicPage">Dynamic Razor Page</a></li>
+            <li>
+                <b>In Area</b>
 
-                </ul></li>
-           
+                <ul>
+                    <li>
+                        <a href="/DynamicContentResult">Dynamic Controller Content (works)</a>
+                    </li>
+                    <li>
+                        <a href="/Dynamic">Dynamic MVC View</a>
+                    </li>
+                    <li>
+                        <a href="MyFeature/DynamicPage">Dynamic Razor Page</a>
+                    </li>
+
+                </ul>
+            </li>
+
             <li>
                 <b>In Root</b>
                 <ul>
-                    <li><a href="/Alt/DynamicContentResult">Dynamic Controller Content (works)</a></li>
-                    <li><a href="/Alt/Dynamic">Dynamic MVC View</a></li>
-                    <li><a href="AltDynamicPage">Dynamic Razor Page</a></li>
+                    <li>
+                        <a href="/Alt/DynamicContentResult">Dynamic Controller Content (works)</a>
+                    </li>
+                    <li>
+                        <a href="/Alt/Dynamic">Dynamic MVC View</a>
+                    </li>
+                    <li>
+                        <a href="AltDynamicPage">Dynamic Razor Page</a>
+                    </li>
                 </ul>
             </li>
-           
+
 
         </ul>
 

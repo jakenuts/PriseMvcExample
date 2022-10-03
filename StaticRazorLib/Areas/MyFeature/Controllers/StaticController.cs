@@ -6,9 +6,6 @@ namespace StaticRazorLib.Controllers
     public class StaticController : Controller
     {
         [Route("Static")]
-        public IActionResult Static()
-        {
-            return View("StaticView");
-        }
+        public IActionResult Static() => View("StaticView");
     }
 }

@@ -6,15 +6,9 @@ namespace DynamicRazorLib.Areas.MyFeature.Controllers
     public class DynamicController : Controller
     {
         [Route("Dynamic")]
-        public IActionResult Dynamic()
-        {
-            return View("DynamicView");
-        }
+        public IActionResult Dynamic() => View("DynamicView");
 
         [Route("DynamicContentResult")]
-        public IActionResult DynamicContent()
-        {
-            return Content("This works!");
-        }
+        public IActionResult DynamicContent() => Content("This works!");
     }
 }
