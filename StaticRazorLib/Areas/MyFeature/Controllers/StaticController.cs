@@ -7,5 +7,8 @@ namespace StaticRazorLib.Controllers
     {
         [Route("Static")]
         public IActionResult Static() => View("StaticView");
+
+        [Route("StaticContent")]
+        public IActionResult StaticContent() => Content("This works!");
     }
 }

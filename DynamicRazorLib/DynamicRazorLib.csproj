@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <IsPackable>true</IsPackable>
+
     <BaseOutputPath>..\PriseMvc\Modules\dynamicrazorlib</BaseOutputPath>
   </PropertyGroup>
 

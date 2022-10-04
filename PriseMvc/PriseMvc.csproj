@@ -13,18 +13,18 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Prise" Version="6.*" />
-    <PackageReference Include="Prise.Mvc" Version="6.*" />
-  </ItemGroup>
-
-
-  <ItemGroup>
     <Content Remove="Modules\**" />
   </ItemGroup>
 
 
   <ItemGroup>
     <Folder Include="Modules\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Prise" Version="6.0.0" />
+    <PackageReference Include="Prise.Mvc" Version="6.0.0" />
   </ItemGroup>
 
 

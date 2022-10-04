@@ -67,6 +67,7 @@ namespace PriseMvc.Controllers
             });
 
             applicationPartManager.ApplicationParts.Add(new PluginAssemblyPart(pluginAssembly.Assembly));
+            applicationPartManager.ApplicationParts.Add(new CompiledRazorAssemblyPart(pluginAssembly.Assembly));
 
             pluginChangeProvider.TriggerPluginChanged();
 
@@ -92,15 +93,25 @@ namespace PriseMvc.Controllers
             }
 
             var pluginAssemblyToDisable = Path.GetFileNameWithoutExtension(pluginToDisable.AssemblyName);
-            var partToRemove = applicationPartManager.ApplicationParts.FirstOrDefault(a => a.Name == pluginAssemblyToDisable);
 
-            if (partToRemove == null)
+            var partToRemove = applicationPartManager.ApplicationParts
+
+                //.OfType<RazorPluginAssemblyPart>()
+                .Where(a => a.Name == pluginAssemblyToDisable)
+                .ToArray();
+
+            if (!partToRemove.Any())
             {
                 throw new NullReferenceException();
             }
 
-            applicationPartManager.ApplicationParts.Remove(partToRemove);
+            foreach (var part in partToRemove)
+            {
+                applicationPartManager.ApplicationParts.Remove(part);
+            }
+
             await mvcPluginLoader.UnloadPluginAssembly<IMvcPlugin>(pluginToDisable);
+            
             pluginChangeProvider.TriggerPluginChanged();
 
             return Redirect("/");
@@ -129,7 +140,9 @@ namespace PriseMvc.Controllers
                                     IsEnabled = pluginPart != null
                                 };
 
-            return new HomeViewModel { Plugins = loadedPlugins };
+
+
+            return new HomeViewModel { Plugins = loadedPlugins.DistinctBy(x => x.Name) };
         }
     }
 }

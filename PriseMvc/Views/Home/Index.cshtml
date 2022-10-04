@@ -1,53 +1,71 @@
-﻿@model Contracts.HomeViewModel
+﻿@inject EndpointDataSource EndpointsDataSource
+@inject ApplicationPartManager ApplicationParts
+@using Microsoft.AspNetCore.Mvc.ApplicationModels
+@using Microsoft.AspNetCore.Mvc.ApplicationParts
+@using Microsoft.AspNetCore.Mvc.RazorPages
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.Reflection
+@model Contracts.HomeViewModel
 @{
     ViewData["Title"] = "ASP.NET 6.0 MVC application with Prise Plugins as controllers!";
+
+    string ShortName(Assembly assembly)
+    {
+        var cultix = assembly.FullName!.IndexOf(", Culture", StringComparison.Ordinal);
+
+        return cultix > 0 ? assembly.FullName.Substring(0, cultix) : assembly.FullName;
+    }
 }
 
 <div class="text-center">
-    <h1 class="display-4">ASP.NET 6.0 MVC Plugins using Prise2!</h1>
-    <img src="https://github.com/merken/Prise/blob/master/docs/prise.png?raw=true" height="50px"/>
-    <div class="display-4" style="font-size: 21pt">These are the features (IMvcPlugin) plugins discovered using Prise Assembly Scanning</div>
-    <table class="table">
-        <thead>
+<h1 class="display-4">ASP.NET 6.0 MVC Plugins using Prise2!</h1>
+<img src="https://github.com/merken/Prise/blob/master/docs/prise.png?raw=true" height="50px"/>
+<div class="display-4" style="font-size: 21pt">These are the features (IMvcPlugin) plugins discovered using Prise Assembly Scanning</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            Plugin Name
+        </th>
+        <th>
+            Plugin Description
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Plugins)
+    {
         <tr>
-            <th>
-                Plugin Name
-            </th>
-            <th>
-                Plugin Description
-            </th>
-            <th></th>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td style="text-align: left">
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @if (!item.IsEnabled)
+                {
+                    <a asp-action="Enable" asp-route-id="@item.Name">Enable</a>
+                }
+                else
+                {
+                    <a asp-action="Disable" asp-route-id="@item.Name">Disable</a>
+                }
+            </td>
         </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.Plugins)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td style="text-align: left">
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @if (!item.IsEnabled)
-                    {
-                        <a asp-action="Enable" asp-route-id="@item.Name">Enable</a>
-                    }
-                    else
-                    {
-                        <a asp-action="Disable" asp-route-id="@item.Name">Disable</a>
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    }
+    </tbody>
+</table>
 
-    <div class="text-start">
-
+<div class="text-start d-flex justify-content-around">
+    
+    <div class="p-4">
         <h3>Static Library</h3>
         <ul>
+            <li>
+                <a asp-area="MyFeature" asp-controller="Static" asp-action="StaticContent">Static Controller Content</a>
+            </li>
             <li>
                 <a asp-area="MyFeature" asp-controller="Static" asp-action="Static">Static MVC View</a>
             </li>
@@ -55,45 +73,191 @@
                 <a href="MyFeature/StaticPage">Static Razor Page</a>
             </li>
         </ul>
-
-
-        <h3>Dynamic Library</h3>
+    </div>
+    <div class="p-4">
+        <h3>Dynamic Library Area</h3>
         <ul>
             <li>
-                <b>In Area</b>
-
-                <ul>
-                    <li>
-                        <a href="/DynamicContentResult">Dynamic Controller Content (works)</a>
-                    </li>
-                    <li>
-                        <a href="/Dynamic">Dynamic MVC View</a>
-                    </li>
-                    <li>
-                        <a href="MyFeature/DynamicPage">Dynamic Razor Page</a>
-                    </li>
-
-                </ul>
+                <a href="/DynamicContent">Dynamic Controller Content</a>
             </li>
-
             <li>
-                <b>In Root</b>
-                <ul>
-                    <li>
-                        <a href="/Alt/DynamicContentResult">Dynamic Controller Content (works)</a>
-                    </li>
-                    <li>
-                        <a href="/Alt/Dynamic">Dynamic MVC View</a>
-                    </li>
-                    <li>
-                        <a href="AltDynamicPage">Dynamic Razor Page</a>
-                    </li>
-                </ul>
+                <a href="/Dynamic">Dynamic MVC View</a>
             </li>
-
+            <li>
+                <a href="MyFeature/DynamicPage">Dynamic Razor Page</a>
+            </li>
 
         </ul>
 
-
     </div>
+    <div class="p-4">
+            <h3>Dynamic Library Root</h3>
+            <ul>
+                <li>
+                    <a href="/Alt/DynamicContent">Dynamic Controller Content</a>
+                </li>
+                <li>
+                    <a href="/Alt/Dynamic">Dynamic MVC View</a>
+                </li>
+                <li>
+                    <a href="AltDynamicPage">Dynamic Razor Page</a>
+                </li>
+            </ul>
+    </div>
+</div>
+
+
+@*** Routes ***@
+
+<table class="table table-striped table-dark">
+    <thead>
+    <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Route Name</th>
+        <th scope="col">Route Pattern</th>
+        <th scope="col">Metadata</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var index = 0;
+
+        var routesToSkip = new[]
+        {
+            "HomeController",
+            "/Error",
+            "/Privacy"
+        };
+    }
+
+    @foreach (var endpoint in EndpointsDataSource.Endpoints.ToList())
+    {
+        index++;
+
+        if (routesToSkip.Any(r => endpoint?.DisplayName?.Contains(r) == true))
+            continue;
+
+        var routeEndpoint = endpoint as RouteEndpoint;
+        <tr>
+            <td>@routeEndpoint?.Order</td>
+            <td class="text-start">@endpoint.DisplayName</td>
+            <td class="text-start">@routeEndpoint?.RoutePattern.RawText</td>
+            <td>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#endpoint-@index" aria-expanded="false" aria-controls="collapseExample">
+                    ...
+                </button>
+                <ul class="collapse" id="endpoint-@index">
+                    @foreach (var md in endpoint.Metadata)
+                    {
+                        switch (md)
+                        {
+                            case PageRouteMetadata prm:
+                                <li>
+                                    <p>@nameof(PageRouteMetadata)</p>
+                                    <ul>
+                                        <li>Page Route: @prm.PageRoute</li>
+                                        <li>Route Template: @prm.RouteTemplate</li>
+                                    </ul>
+                                </li>
+                                break;
+                            case PageActionDescriptor pad:
+                                <li>
+                                    <p>@nameof(PageActionDescriptor)</p>
+                                    <ul>
+                                        <li>Id: @pad.Id</li>
+                                        <li>Area: @pad.AreaName</li>
+                                        <li>Display Name: @pad.DisplayName</li>
+                                        <li>View Engine Path: @pad.ViewEnginePath</li>
+                                        <li>Relative Path: @pad.RelativePath</li>
+                                    </ul>
+                                </li>
+                                break;
+                            case RouteNameMetadata rnm:
+                                <li>
+                                    Route Name Metadata: @rnm.RouteName
+                                </li>
+                                break;
+                            case SuppressLinkGenerationMetadata slg:
+                                <li>
+                                    suppress link: @slg.SuppressLinkGeneration;
+                                </li>
+                                break;
+                            default:
+                                <li>@md.ToString()</li>
+                                break;
+                        }
+                    }
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@*** Parts ***@
+<table class="table table-striped table-dark">
+    <thead>
+    <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Part Name</th>
+        <th scope="col">Part Type</th>
+        <th scope="col">Source</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        index = 0;
+
+        
+    }
+
+    @foreach (var part in ApplicationParts.ApplicationParts)
+    {
+        index++;
+
+        <tr>
+            <td>@index</td>
+            <td class="text-start">@part.Name</td>
+            <td class="text-start">@part.GetType().Name</td>
+
+            @switch (part)
+            {
+                case AssemblyPart ap:
+                    <td>@ShortName(ap.Assembly)</td>
+                    break;
+                case CompiledRazorAssemblyPart cp:
+                    <td>@ShortName(cp.Assembly)</td>
+                    break;
+            }
+        </tr>
+    }
+    </tbody>
+</table>
+
+@*** Features ***@
+<table class="table table-striped table-dark">
+    <thead>
+    <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Feature Name</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        index = 0;
+    }
+
+    @foreach (var feature in ApplicationParts.FeatureProviders)
+    {
+        index++;
+
+        <tr>
+            <td>@index</td>
+            <td class="text-start">@feature.GetType().Name</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
 </div>
