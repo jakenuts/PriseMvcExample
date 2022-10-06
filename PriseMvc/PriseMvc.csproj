@@ -23,6 +23,8 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.9" />
     <PackageReference Include="Prise" Version="6.0.0" />
     <PackageReference Include="Prise.Mvc" Version="6.0.0" />
   </ItemGroup>

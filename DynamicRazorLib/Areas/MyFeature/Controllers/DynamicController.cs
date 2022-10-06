@@ -8,6 +8,7 @@ namespace DynamicRazorLib.Areas.MyFeature.Controllers
         [Route("Dynamic")]
         public IActionResult Dynamic() => View("DynamicView");
 
+
         [Route("DynamicContent")]
         public IActionResult DynamicContent() => Content("This works!");
     }

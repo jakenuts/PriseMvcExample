@@ -3,6 +3,8 @@ using System.Reflection;
 using Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.Extensions.DependencyInjection;
 using Prise.Mvc;
 using PriseMvc.Models;
 
@@ -16,6 +18,8 @@ namespace PriseMvc.Controllers
 
         private readonly IMvcPluginLoader mvcPluginLoader;
 
+        private readonly IServiceProvider _serviceProvider;
+
         //private readonly IConfigurationService configurationService;
         private readonly IPriseMvcActionDescriptorChangeProvider pluginChangeProvider;
 
@@ -23,6 +27,7 @@ namespace PriseMvc.Controllers
             ILogger<HomeController> logger,
             ApplicationPartManager applicationPartManager,
             IMvcPluginLoader mvcPluginLoader,
+            IServiceProvider serviceProvider,
 
             // IConfigurationService configurationService,
             IPriseMvcActionDescriptorChangeProvider pluginChangeProvider)
@@ -30,6 +35,7 @@ namespace PriseMvc.Controllers
             this.logger = logger;
             this.applicationPartManager = applicationPartManager;
             this.mvcPluginLoader = mvcPluginLoader;
+            _serviceProvider = serviceProvider;
 
             //       this.configurationService = configurationService;
             this.pluginChangeProvider = pluginChangeProvider;
@@ -68,8 +74,12 @@ namespace PriseMvc.Controllers
 
             applicationPartManager.ApplicationParts.Add(new PluginAssemblyPart(pluginAssembly.Assembly));
             applicationPartManager.ApplicationParts.Add(new CompiledRazorAssemblyPart(pluginAssembly.Assembly));
-
             pluginChangeProvider.TriggerPluginChanged();
+
+            var compiler = _serviceProvider.GetRequiredService<IViewCompilerProvider>().GetCompiler() as CustomViewCompiler;
+            compiler.ClearCache();
+            
+
 
             return Redirect("/");
         }

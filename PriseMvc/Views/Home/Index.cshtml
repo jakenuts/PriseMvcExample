@@ -1,10 +1,17 @@
 ﻿@inject EndpointDataSource EndpointsDataSource
 @inject ApplicationPartManager ApplicationParts
+@inject ICompositeViewEngine CompositeViewEngine
+@inject IActionDescriptorCollectionProvider ActionDescriptorProvider
 @using Microsoft.AspNetCore.Mvc.ApplicationModels
 @using Microsoft.AspNetCore.Mvc.ApplicationParts
 @using Microsoft.AspNetCore.Mvc.RazorPages
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using System.Reflection
+@using Microsoft.AspNetCore.Mvc.Abstractions
+@using Microsoft.AspNetCore.Mvc.Infrastructure
+@using Microsoft.AspNetCore.Mvc.Razor.Compilation
+@using Microsoft.AspNetCore.Mvc.ViewEngines
+@using RouteData = Microsoft.AspNetCore.Routing.RouteData
 @model Contracts.HomeViewModel
 @{
     ViewData["Title"] = "ASP.NET 6.0 MVC application with Prise Plugins as controllers!";
@@ -83,6 +90,7 @@
             <li>
                 <a href="/Dynamic">Dynamic MVC View</a>
             </li>
+
             <li>
                 <a href="MyFeature/DynamicPage">Dynamic Razor Page</a>
             </li>
@@ -234,6 +242,39 @@
     </tbody>
 </table>
 
+    @*** Application Part Views ***@
+<table class="table table-striped table-dark">
+    <thead>
+    <tr>
+        <th scope="col">Order</th>
+        <th scope="col">View Path</th>
+        <th scope="col">View Type</th>
+        <th scope="col">Kind</th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        index = 0;
+        var viewsFeature = new ViewsFeature();
+        ApplicationParts.PopulateFeature(viewsFeature);
+    }
+
+            @foreach (var row in viewsFeature.ViewDescriptors)
+    {
+        index++;
+
+        <tr>
+            <td>@index</td>
+            <td class="text-start">@row.RelativePath</td>
+            <td class="text-start">@row.Item.Type.FullName</td>
+            <td class="text-start">@row.Item.Kind</td>
+
+        </tr>
+    }
+    </tbody>
+</table>
+
+
 @*** Features ***@
 <table class="table table-striped table-dark">
     <thead>
@@ -259,5 +300,56 @@
     }
     </tbody>
 </table>
+
+
+@*** Razor Pages
+<table class="table table-striped table-dark">
+    <thead>
+    <tr>
+        <th scope="col">Order</th>
+        <th scope="col">View Path</th>
+        <th scope="col">Engine Path</th>
+        <th scope="col">Page Type</th>
+        <th scope="col">Area</th>
+        
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        index = 0;
+        var razorPages = ActionDescriptorProvider.ActionDescriptors.Items.OfType<CompiledPageActionDescriptor>();
+
+        var pageEndpoints = razorPages.OfType<CompiledPageActionDescriptor>()
+            .Select(e =>
+            new {
+                e.DisplayName,
+                e.PageTypeInfo,
+                e.AreaName, 
+                e.ViewEnginePath,
+                e.RelativePath
+            });
+
+        var engines = CompositeViewEngine.ViewEngines.Select(e => new
+        {
+            Engine = e,
+        });
+    }
+
+    @foreach (var row in pageEndpoints)
+    {
+        index++;
+
+        <tr>
+            <td>@index</td>
+            <td class="text-start">@row.RelativePath</td>
+            <td class="text-start">@row.ViewEnginePath</td>
+            <td class="text-start">@row.PageTypeInfo.Name</td>
+            <td class="text-start">@row.AreaName</td>
+
+        </tr>
+    }
+    </tbody>
+</table>
+ ***@
 
 </div>
