@@ -72,11 +72,16 @@ namespace PriseMvc.Controllers
                 //  context.AddHostService<IConfigurationService>(this.configurationService);
             });
 
+            var compiledRazorPart = new CompiledRazorAssemblyPart(pluginAssembly.Assembly);
+
             applicationPartManager.ApplicationParts.Add(new PluginAssemblyPart(pluginAssembly.Assembly));
-            applicationPartManager.ApplicationParts.Add(new CompiledRazorAssemblyPart(pluginAssembly.Assembly));
+            applicationPartManager.ApplicationParts.Add(compiledRazorPart);
             pluginChangeProvider.TriggerPluginChanged();
 
+            //var compiledViews = (compiledRazorPart as IRazorCompiledItemProvider).CompiledItems;
+            // TODO: add the compiled views to the view compiler rather than clearing cache
             var compiler = _serviceProvider.GetRequiredService<IViewCompilerProvider>().GetCompiler() as CustomViewCompiler;
+            
             compiler.ClearCache();
             
 
